@@ -10,7 +10,7 @@ export default defineConfig(({ mode }) => {
     server: mode === 'development' ? {
       proxy: {
         '/api': {
-          target: 'https://your-render-backend-url.onrender.com',
+          target: 'https://task-management-w92z.onrender.com',
           changeOrigin: true,
           rewrite: (path) => path.replace(/^\/api/, '')
         }
