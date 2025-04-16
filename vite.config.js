@@ -10,7 +10,7 @@ export default defineConfig(({ mode }) => {
     server: mode === 'development' ? {
       proxy: {
         '/api': {
-          target: 'http://localhost:5000',
+          target: 'https://your-render-backend-url.onrender.com',
           changeOrigin: true,
           rewrite: (path) => path.replace(/^\/api/, '')
         }
