@@ -13,86 +13,148 @@ import {
   FormControl
 } from '@mui/material';
 import { createTask } from '../services/api';
-import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
+import { DateTimePicker } from '@mui/x-date-pickers';
 
-export default function TaskForm({ onTaskCreated }) {
-  const [open, setOpen] = useState(true);
-  const [formData, setFormData] = useState({
-    title: '',
-    description: '',
-    status: 'pending',
-    dueDateTime: new Date()
-  });
-  const [dueDate, setDueDate] = useState(new Date());
+const TaskForm = ({ onTaskCreated, hideForm }) => {
+    const [open, setOpen] = useState(true);
+    const [formData, setFormData] = useState({
+        title: '',
+        description: '',
+        status: 'pending',
+        dueDateTime: new Date()
+    });
+    const [dueDate, setDueDate] = useState(new Date());
 
-  const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-  };
+    const handleChange = (e) => {
+        const { name, value } = e.target;
 
-  const handleDateChange = (date) => {
-    setFormData({ ...formData, dueDateTime: date });
-  };
+        // Capitalize only the first letter while preserving cursor position
+        let capitalizedValue = value;
+        if (value.length === 1) {
+            capitalizedValue = value.charAt(0).toUpperCase();
+        } else if (value.length > 1 && formData[name].length === 0) {
+            capitalizedValue = value.charAt(0).toUpperCase() + value.slice(1);
+        }
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    await createTask(formData);
-    onTaskCreated();
-    setOpen(false);
-  };
+        setFormData({ ...formData, [name]: capitalizedValue });
+    };
 
-  return (
-    <Dialog open={open} onClose={() => setOpen(false)}>
-      <DialogTitle>Create New Task</DialogTitle>
-      <DialogContent>
-        <Stack spacing={3} sx={{ mt: 1 }}>
-          <TextField
-            name="title"
-            label="Title"
-            value={formData.title}
-            onChange={handleChange}
-            fullWidth
-            required
-          />
-          <TextField
-            name="description"
-            label="Description"
-            value={formData.description}
-            onChange={handleChange}
-            fullWidth
-            multiline
-            rows={4}
-          />
-          <FormControl fullWidth>
-            <InputLabel>Status</InputLabel>
-            <Select
-              name="status"
-              value={formData.status}
-              label="Status"
-              onChange={handleChange}
-            >
-              <MenuItem value="pending">Pending</MenuItem>
-              <MenuItem value="in-progress">In Progress</MenuItem>
-              <MenuItem value="completed">Completed</MenuItem>
-            </Select>
-          </FormControl>
-          <DateTimePicker
-            label="Due Date & Time"
-            value={dueDate}
-            onChange={(newValue) => setDueDate(newValue)}
-            renderInput={(params) => (
-                <TextField 
-                {...params} 
-                fullWidth 
-                sx={{ mt: 2 }} 
-                />
-            )}
-          />
-        </Stack>
-      </DialogContent>
-      <DialogActions>
-        <Button onClick={() => setOpen(false)}>Cancel</Button>
-        <Button onClick={handleSubmit} variant="contained">Create Task</Button>
-      </DialogActions>
-    </Dialog>
-  );
+    const handleDateChange = (date) => {
+        setFormData({ ...formData, dueDateTime: date });
+    };
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        await createTask(formData);
+        onTaskCreated();
+        setOpen(false);
+    };
+
+    const handleHideDialog = () => {
+        setOpen(false);
+        hideForm();
+    }
+
+    return (
+        <Dialog 
+            open={open} 
+            onClose={handleHideDialog}
+            PaperProps={{
+            className: "bg-white rounded-lg shadow-xl w-full max-w-md"
+            }}
+        >
+            <DialogTitle className="bg-blue-500 text-white pt-[20px]">
+                Create New Task
+            </DialogTitle>
+            
+            <DialogContent className="p-6">
+                <Stack spacing={4} className="mt-[10px]">
+                    <TextField
+                        name="title"
+                        label="Title"
+                        value={formData.title}
+                        onChange={handleChange}
+                        fullWidth
+                        required
+                        className="mb-4"
+                        InputProps={{
+                            className: "bg-gray-50 rounded", // Added 'capitalize' here
+                        }}
+                        InputLabelProps={{
+                            className: "text-gray-600"
+                        }}
+                    />
+                    
+                    <TextField
+                        name="description"
+                        label="Description"
+                        value={formData.description}
+                        onChange={handleChange}
+                        fullWidth
+                        multiline
+                        rows={4}
+                        className="mb-4"
+                        InputProps={{
+                            className: "bg-gray-50 rounded",
+                        }}
+                        InputLabelProps={{
+                            className: "text-gray-600"
+                        }}
+                    />
+                    
+                    <FormControl fullWidth className="mb-4">
+                        <InputLabel className="text-gray-600">Status</InputLabel>
+                        <Select
+                            name="status"
+                            value={formData.status}
+                            label="Status"
+                            onChange={handleChange}
+                            className="bg-gray-50 rounded"
+                        >
+                            <MenuItem value="pending">Pending</MenuItem>
+                            <MenuItem value="in-progress">In Progress</MenuItem>
+                            <MenuItem value="completed">Completed</MenuItem>
+                        </Select>
+                    </FormControl>
+                    
+                    <DateTimePicker
+                        label="Due Date & Time"
+                        value={dueDate}
+                        onChange={(newValue) => {
+                            setDueDate(newValue);
+                            handleDateChange(newValue);
+                        }}
+                        renderInput={(params) => (
+                            <TextField 
+                            {...params} 
+                            fullWidth 
+                            className="bg-gray-50 rounded"
+                            InputLabelProps={{
+                                className: "text-gray-600"
+                            }}
+                            />
+                        )}
+                    />
+                </Stack>
+            </DialogContent>
+            
+            <DialogActions className="p-4 bg-gray-100 rounded-b-lg">
+                <Button 
+                    onClick={handleHideDialog}
+                    className="text-gray-600 hover:bg-gray-200 px-4 py-2 rounded"
+                >
+                    Cancel
+                </Button>
+                <Button 
+                    onClick={handleSubmit} 
+                    variant="contained"
+                    className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded"
+                >
+                    Create Task
+                </Button>
+            </DialogActions>
+        </Dialog>
+    );
 }
+
+export default TaskForm;

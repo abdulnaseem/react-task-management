@@ -12,131 +12,139 @@ import {
 } from '@mui/material';
 import { DateTimePicker } from '@mui/x-date-pickers';
 import { getTask, updateTaskStatus } from '../services/api';
+import ClipLoader from 'react-spinners/ClipLoader';
 
-export default function TaskDetailPage() {
-  const { id } = useParams();
-  const navigate = useNavigate();
-  const [task, setTask] = useState(null);
-  const [isEditing, setIsEditing] = useState(false);
-  const [formData, setFormData] = useState({
-    title: '',
-    description: '',
-    status: 'pending',
-    dueDateTime: new Date()
-  });
+const TaskDetailPage = () => {
+    const { id } = useParams();
+    const navigate = useNavigate();
+    const [task, setTask] = useState(null);
+    const [isEditing, setIsEditing] = useState(false);
+    const [formData, setFormData] = useState({
+        title: '',
+        description: '',
+        status: 'pending',
+        dueDateTime: new Date()
+    });
 
-  useEffect(() => {
-    const fetchTask = async () => {
-      const task = await getTask(id);
-      setTask(task);
-      setFormData({
-        title: task.title,
-        description: task.description || '',
-        status: task.status,
-        dueDateTime: new Date(task.dueDateTime)
-      });
+    useEffect(() => {
+        const fetchTask = async () => {
+            const task = await getTask(id);
+            setTask(task);
+            setFormData({
+                title: task.title,
+                description: task.description || '',
+                status: task.status,
+                dueDateTime: new Date(task.dueDateTime)
+            });
+        };
+        fetchTask();
+    }, [id]);
+
+    const handleChange = (e) => {
+        setFormData({ ...formData, [e.target.name]: e.target.value });
     };
-    fetchTask();
-  }, [id]);
 
-  const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-  };
+    const handleDateChange = (date) => {
+        setFormData({ ...formData, dueDateTime: date });
+    };
 
-  const handleDateChange = (date) => {
-    setFormData({ ...formData, dueDateTime: date });
-  };
+    const handleStatusChange = async (newStatus) => {
+        await updateTaskStatus(id, newStatus);
+        const updatedTask = await getTask(id);
+        setTask(updatedTask);
+    };
 
-  const handleStatusChange = async (newStatus) => {
-    await updateTaskStatus(id, newStatus);
-    const updatedTask = await getTask(id);
-    setTask(updatedTask);
-  };
+    if (!task) return (
+        <div className="flex justify-center my-4 mt-[150px]" role='loading' aria-label='Loading tasks'>
+            <ClipLoader color="#000" size={50} />
+        </div>
+    );
 
-  if (!task) return <Typography>Loading...</Typography>;
-
-  return (
-    <Stack spacing={3}>
-      <Button variant="outlined" onClick={() => navigate('/')}>
-        Back to Tasks
-      </Button>
-      
-      {isEditing ? (
-        <Stack component="form" spacing={3}>
-          <TextField
-            name="title"
-            label="Title"
-            value={formData.title}
-            onChange={handleChange}
-            fullWidth
-          />
-          <TextField
-            name="description"
-            label="Description"
-            value={formData.description}
-            onChange={handleChange}
-            fullWidth
-            multiline
-            rows={4}
-          />
-          <FormControl fullWidth>
-            <InputLabel>Status</InputLabel>
-            <Select
-              name="status"
-              value={formData.status}
-              label="Status"
-              onChange={handleChange}
-            >
-              <MenuItem value="pending">Pending</MenuItem>
-              <MenuItem value="in-progress">In Progress</MenuItem>
-              <MenuItem value="completed">Completed</MenuItem>
-            </Select>
-          </FormControl>
-          <DateTimePicker
-            label="Due Date & Time"
-            value={formData.dueDateTime}
-            onChange={handleDateChange}
-            renderInput={(params) => <TextField {...params} fullWidth />}
-          />
-          <Stack direction="row" spacing={2}>
-            <Button 
-              variant="contained" 
-              onClick={() => setIsEditing(false)}
-            >
-              Cancel
+    return (
+        <Stack spacing={3} className='mt-[50px]'>
+            <Button variant="outlined" onClick={() => navigate('/')}>
+                Back to Tasks
             </Button>
-            <Button 
-              variant="contained" 
-              color="primary"
-              onClick={() => setIsEditing(false)}
-            >
-              Save Changes
-            </Button>
-          </Stack>
+            
+            {
+                isEditing ? (
+                    <Stack component="form" spacing={3}>
+                        <TextField
+                            name="title"
+                            label="Title"
+                            value={formData.title}
+                            onChange={handleChange}
+                            fullWidth
+                        />
+                        <TextField
+                            name="description"
+                            label="Description"
+                            value={formData.description}
+                            onChange={handleChange}
+                            fullWidth
+                            multiline
+                            rows={4}
+                        />
+                        <FormControl fullWidth>
+                        <InputLabel>Status</InputLabel>
+                        <Select
+                            name="status"
+                            value={formData.status}
+                            label="Status"
+                            onChange={handleChange}
+                        >
+                            <MenuItem value="pending">Pending</MenuItem>
+                            <MenuItem value="in-progress">In Progress</MenuItem>
+                            <MenuItem value="completed">Completed</MenuItem>
+                        </Select>
+                        </FormControl>
+                        <DateTimePicker
+                            label="Due Date & Time"
+                            value={formData.dueDateTime}
+                            onChange={handleDateChange}
+                            renderInput={(params) => <TextField {...params} fullWidth />}
+                        />
+                        <Stack direction="row" spacing={2}>
+                        <Button 
+                            variant="contained" 
+                            onClick={() => setIsEditing(false)}
+                        >
+                            Cancel
+                        </Button>
+                        <Button 
+                            variant="contained" 
+                            color="primary"
+                            onClick={() => setIsEditing(false)}
+                        >
+                            Save Changes
+                        </Button>
+                        </Stack>
+                    </Stack>
+                ) : (
+                    <>
+                        <Typography variant="h4">{task.title}</Typography>
+                        <Typography>{task.description}</Typography>
+                        <Typography>
+                            Status: <span style={{ 
+                                color: task.status === 'completed' ? 'green' : 
+                                        task.status === 'in-progress' ? 'orange' : 'gray'
+                            }}>
+                                {task.status}
+                            </span>
+                        </Typography>
+                        <Typography>
+                            Due: {new Date(task.dueDateTime).toLocaleString()}
+                        </Typography>
+                        {/* <Button 
+                        variant="contained" 
+                        onClick={() => setIsEditing(true)}
+                        >
+                        Edit Task
+                        </Button> */}
+                    </>
+            )}
         </Stack>
-      ) : (
-        <>
-          <Typography variant="h4">{task.title}</Typography>
-          <Typography>{task.description}</Typography>
-          <Typography>
-            Status: <span style={{ 
-              color: task.status === 'completed' ? 'green' : 
-                     task.status === 'in-progress' ? 'orange' : 'gray'
-            }}>
-              {task.status}
-            </span>
-          </Typography>
-          <Typography>
-            Due: {new Date(task.dueDateTime).toLocaleString()}
-          </Typography>
-          <Button 
-            variant="contained" 
-            onClick={() => setIsEditing(true)}
-          >
-            Edit Task
-          </Button>
-        </>
-      )}
-    </Stack>
-  );
+    );
 }
+
+export default TaskDetailPage;
