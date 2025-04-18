@@ -89,7 +89,7 @@ const TaskItem = ({ task, onTaskUpdated }) => {
                 primary={task.title}
                 secondary={
                     <>
-                        <Typography component="span" display="block">
+                        <Typography component="span" display="block" className='text-sm md:text-base'>
                             {task.description}
                         </Typography>
                         <Typography component="span" display="block" variant="caption">
