@@ -90,4 +90,25 @@ describe('TaskForm Component', () => {
     
     expect(mockHideForm).toHaveBeenCalled();
   });
+
+  it('should display error message when task creation fails', async () => {
+    const errorMessage = 'Title cannot be empty';
+    createTask.mockRejectedValueOnce({
+      response: {
+        data: {
+          error: errorMessage
+        }
+      }
+    });
+
+    render(<TaskForm onTaskCreated={mockOnTaskCreated} hideForm={mockHideForm} />);
+    
+    fireEvent.click(screen.getByText('Create Task'));
+    
+    await waitFor(() => {
+      expect(createTask).toHaveBeenCalled();
+      expect(screen.getByText(errorMessage)).toBeInTheDocument();
+      expect(screen.getByText(errorMessage)).toHaveStyle('color: red');
+    });
+  });
 });

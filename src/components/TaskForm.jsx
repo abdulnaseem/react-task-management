@@ -85,13 +85,13 @@ const TaskForm = ({ onTaskCreated, hideForm }) => {
             </DialogTitle>
 
             {error && (
-                <Typography className="text-red-500 text-sm mb-2">
+                <Typography style={{ color: 'red', marginLeft: '30px', fontWeight: 'bold' }}>
                     {error}
                 </Typography>
             )}
             
             <DialogContent className="p-6">
-                <Stack spacing={4} className="mt-[10px]">
+                <Stack spacing={4} className="mt-[5px]">
                     <TextField
                         name="title"
                         label="Title"
