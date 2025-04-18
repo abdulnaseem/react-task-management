@@ -28,6 +28,7 @@ export const createTask = async(taskData) => {
         return response.data.data;
     } catch(error) {
         console.log(error);
+        throw error;
     }
 }  
 

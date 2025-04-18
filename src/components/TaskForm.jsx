@@ -24,6 +24,7 @@ const TaskForm = ({ onTaskCreated, hideForm }) => {
         dueDateTime: new Date()
     });
     const [dueDate, setDueDate] = useState(new Date());
+    const [error, setError] = useState("");
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -45,10 +46,25 @@ const TaskForm = ({ onTaskCreated, hideForm }) => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        await createTask(formData);
-        onTaskCreated();
-        setOpen(false);
+        setError(null); 
+    
+        try {
+            await createTask(formData);
+            onTaskCreated();
+            setOpen(false);
+        } catch (error) {
+            if (error.response && error.response.data && error.response.data.error) {
+                const errorMsg = Array.isArray(error.response.data.error)
+                    ? error.response.data.error.join(', ')
+                    : error.response.data.error;
+                console.log(errorMsg);    
+                setError(errorMsg);
+            } else {
+                setError('Something went wrong. Please try again.');
+            }
+        }
     };
+    
 
     const handleHideDialog = () => {
         setOpen(false);
@@ -66,6 +82,12 @@ const TaskForm = ({ onTaskCreated, hideForm }) => {
             <DialogTitle className="bg-blue-500 text-white pt-[20px]">
                 Create New Task
             </DialogTitle>
+
+            {error && (
+                <Typography className="text-red-500 text-sm mb-2">
+                    {error}
+                </Typography>
+            )}
             
             <DialogContent className="p-6">
                 <Stack spacing={4} className="mt-[10px]">
